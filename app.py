@@ -10,12 +10,19 @@ from models import init_db
 from models import add_user
 from models import get_users
 from flask_cors import CORS
+import os
+from dotenv import load_dotenv
 
 # Crear la aplicación Flask
 app = Flask(__name__)
+
+# Cargar variables desde .env
+load_dotenv()
+# Asignar la clave secreta desde la variable de entorno
+app.config['SECRET_KEY'] = os.getenv('VUE_SECRET_KEY')
+
 CORS(app)  
 
-app.config['SECRET_KEY'] = '*123571113*'
 
 # Crear la API
 api = Api(app)
