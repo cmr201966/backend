@@ -32,7 +32,7 @@ api.add_resource(UserList, '/users')
 
 @app.route('/')
 def hello_world():
-    return 'Hola...'
+    return 'Server python con flask...'
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -59,9 +59,65 @@ def get_anuncios():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM anuncios")
     anuncios=cursor.fetchall()
-    print ("Anuncios")
-    print (anuncios)
     return jsonify(anuncios)
+
+# Endpoint para obtener un anuncio por su ID
+@app.route('/get_anuncio/<int:id>', methods=['GET'])
+def get_anuncio(id):
+    import sqlite3
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Ejecuta la consulta para obtener el anuncio por ID
+    cursor.execute("SELECT * FROM anuncios WHERE id = ?", (id,))
+    anuncio = cursor.fetchone()
+
+    # Si no se encuentra el anuncio
+    if not anuncio:
+        return jsonify({"message": "Anuncio no encontrado"}), 404
+
+    # Si se encuentra el anuncio, devuelve los datos
+    anuncio_data = {
+        "descripcion": anuncio[1],
+        # Agrega aquí los demás campos del anuncio según tu base de datos
+    }
+
+    conn.close()
+    return jsonify(anuncio_data), 200
+
+# Ruta para insertar o actualizar anuncio
+@app.route('/set_anuncio', methods=['POST'])
+def save_anuncio():
+    import sqlite3
+    # Obtener los datos desde la solicitud
+    data = request.get_json()  # Suponiendo que los datos están en formato JSON
+    descripcion = data.get('descripcion', '')  # Obtener la descripcion del cuerpo de la solicitud
+    id = data.get('id', None)  # Obtener el ID si es un update
+    
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    
+    if id is None:  # Si no hay ID, es una inserción (nuevo anuncio)
+        cursor.execute("INSERT INTO anuncios (desc) VALUES (?)", (descripcion,))
+    else:  # Si hay ID, es una actualización del anuncio
+        cursor.execute("UPDATE anuncios SET desc = ? WHERE id = ?", (descripcion, id))
+
+    conn.commit()
+    conn.close()
+    
+    return jsonify({"message": "Anuncio guardado correctamente"}), 200
+
+
+@app.route('/del_anuncio/<int:id>', methods=['DELETE'])
+def delete_anuncio(id):
+    import sqlite3
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    print ("DELETE FROM anuncios WHERE id = ?", (id,))
+    cursor.execute("DELETE FROM anuncios WHERE id = ?", (id,))
+    conn.commit()
+    print ("Borro")
+    return jsonify("ok"), 200
 
 def verify_user_password(username, password):
     # Conexión a la base de datos SQLite
