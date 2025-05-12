@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    image: flask_app  # Aquí se le da un nombre a la imagen que se construirá
+    container_name: flask_app
+    ports:
+      - "8000:8000"  # Mapea el puerto 8000 del contenedor al puerto 8000 local
+    env_file:
+      - .env  # Utiliza las variables de entorno del archivo .env si las tienes
+    volumes:
+      - .:/app  # Sincroniza el directorio de trabajo con el contenedor
+    command: python3 app.py # Comando para correr el servidor de Django

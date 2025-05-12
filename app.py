@@ -12,6 +12,7 @@ from models import get_users
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
+import pyodbc
 
 # Crear la aplicación Flask
 app = Flask(__name__)
@@ -29,10 +30,9 @@ api = Api(app)
 
 # Inicializar la base de datos
 init_db()
-add_user("cmr", "cmr201966@gmail.com", "*123571113*")
+add_user("cmr", "cmr201966@gmail.com", "*1235*")
 datos=get_users()
-for usuario in datos:
-    print(f"Username: {usuario[1]}, Email: {usuario[2]}, Password: {usuario[3]}")
+print (datos)
 
 # Añadir los recursos (endpoints)
 api.add_resource(UserList, '/users')
@@ -120,10 +120,8 @@ def delete_anuncio(id):
     import sqlite3
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    print ("DELETE FROM anuncios WHERE id = ?", (id,))
     cursor.execute("DELETE FROM anuncios WHERE id = ?", (id,))
     conn.commit()
-    print ("Borro")
     return jsonify("ok"), 200
 
 def verify_user_password(username, password):
@@ -150,7 +148,45 @@ def verify_user_password(username, password):
     conn.close()  # Cerrar la conexión a la base de datos
     return False
 
+def obtener_conexion():
+    print ("Conectar....")
+    server = '10.240.30.158' 
+    database = 'PinkZebra'
+    username = 'vladimir.rodriguez'
+    password = 'P@sswort10!'
+    port = '1433' 
+    connection = pyodbc.connect(f'DRIVER={{ODBC Driver 17 for SQL Server}};'
+                            f'SERVER={server},{port};'
+                            f'DATABASE={database};'
+                            f'UID={username};'
+                            f'PWD={password}')
+    print (connection)
+    return pyodbc.connect(connection)
+
+# Ruta para obtener datos de ejemplo
+@app.route('/get_party/', methods=['GET'])
+def obtener_party():
+# Configuración de conexión
+    server = os.getenv("DB_SERVER")
+    database = os.getenv("DB_NAME")
+    username = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+    port    = os.getenv("DB_PORT")
+    try:
+       conn = pyodbc.connect(
+           'DRIVER={ODBC Driver 17 for SQL Server};'
+           f'SERVER={server},{port};'
+           f'DATABASE={database};'
+           f'UID={username};'
+           f'PWD={password}'
+        )
+       return "Conexión exitosa a la base de datos!"
+
+    except Exception as e:
+        return f"Error al conectar con la base de datos: {e}"    
+  # Cargar las variables de entorno
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=8000)
+#    app.run(debug=True, port=8000)
     app.run(debug=True)

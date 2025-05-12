@@ -44,13 +44,13 @@ def add_user(username, email, password):
        cursor.execute("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", (username, email, password))
     cursor.execute("SELECT * FROM anuncios")
     anuncios=cursor.fetchall()
-    print (anuncios)
     if len(anuncios) == 0:
-       print (f"Los crea")
        cursor.execute("INSERT INTO anuncios (desc) VALUES ('Fotos')")
        cursor.execute("INSERT INTO anuncios (desc) VALUES ('Software')")
        cursor.execute("INSERT INTO anuncios (desc) VALUES ('Calzados')")
     
     conn.commit()
     conn.close()
+    
+# Función para conectarse a la base de datos
 
